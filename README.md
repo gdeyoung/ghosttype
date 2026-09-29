@@ -75,10 +75,16 @@ venv\Scripts\activate        # Windows
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) Pre-download a local model
-python download_model.py
+# 4. (Optional) Verify install before downloading the model
+venv\Scripts\python.exe smoke_test.py
 
-# 5. Run
+# 5. Pre-download a local model (defaults to base.en, ~142 MB)
+python download_model.py             # base.en — fastest, English-optimized
+# or:
+python download_model.py small.en    # 466 MB — better accuracy
+python download_model.py large-v3    # 3.1 GB — best, but slow on CPU
+
+# 6. Run
 python run.py
 ```
 
