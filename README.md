@@ -1,12 +1,12 @@
 # ghosttype
 
-Hold-to-talk voice typing for Windows. Press a hotkey, speak, release — your words appear in whatever app has focus. Fully offline. Local Whisper.
+Push-to-talk and press-to-toggle voice typing for Windows. Press a hotkey, speak — your words appear in whatever app has focus. Fully offline. Local Whisper.
 
 This is Greg DeYoung's fork of [CatBoneheaD/Whisper-Writer](https://github.com/CatBoneheaD/Whisper-Writer), maintained for personal use across the Greg DeYoung fleet.
 
 ## What it does
 
-Hold a hotkey, speak, release. Your voice is transcribed locally by faster-whisper and typed into the focused window — same workflow as BoxType/Voxtype on Omarchy Linux. Recording modes include `hold_to_record` (BoxType-style push-to-talk), `press_to_toggle`, `continuous`, and `voice_activity_detection`.
+Press your hotkey and speak. Your voice is transcribed locally by faster-whisper and typed into the focused window — same workflow as BoxType/Voxtype on Omarchy Linux. Recording modes include `press_to_toggle` (press once to start, once to stop — the default, and the right choice for remapped keys), `hold_to_record` (BoxType-style push-to-talk), `continuous`, and `voice_activity_detection`.
 
 ## Features
 
@@ -52,6 +52,57 @@ ghosttype (this fork)
 ```
 
 The license chain breaks at CatBoneheaD's relicense in their 2026 rewrite (MIT → GPLv3), because the Qt dashboard work they added is GPL-compatible.
+
+## Using the Copilot key as your hotkey
+
+Laptops with a dedicated Copilot key can't bind it directly: Windows 11 consumes
+that key before any application sees it. A live `pynput` probe on an XPS 16
+recorded **zero events** for the Copilot key while surrounding keystrokes arrived
+normally.
+
+The workaround is to have Windows translate it. [Repilot](https://github.com/RyanEwen/Repilot)
+registers as a Microsoft *Copilot hardware key provider*, then synthesizes a
+regular keystroke with `SendInput` on each press — which ghosttype receives like
+any other hotkey.
+
+**This requires buying Repilot from the Microsoft Store.** It is a paid app
+(~$0.99). There is no free shortcut here, and no way around it:
+
+- The Copilot key is claimed via the `com.microsoft.windows.copilotkeyprovider`
+  AppExtension, which Windows only grants to an app with **package identity** —
+  i.e. a signed MSIX.
+- A locally built Repilot binary **cannot** be assigned to the key. It builds and
+  runs fine (we did it, and verified its `SendInput` reaches `pynput`), but with
+  no package identity it is rejected by Settings. The signing certificate belongs
+  to the author.
+
+So if you want the Copilot key, buy Repilot. If you'd rather not, **use any
+ordinary key instead** — bindable options include `caps_lock`, `scroll_lock`,
+`insert`, `pause`, and `f1`–`f24`. Caps Lock is a good push-to-toggle key: single
+press, home row, never needs a Fn chord. This is the recommended default.
+
+If you build from source, Repilot is licensed **PolyForm Noncommercial** —
+free for personal and other noncommercial use, commercial use not permitted.
+Build it yourself from the public repo; the Store is the install route.
+
+### Why press-to-toggle, not push-to-talk
+
+A key remap fires **once per press** and delivers no release signal, so there is
+nothing for push-to-talk to "hold." Toggle maps naturally onto one press = one
+event: press to start, press again to stop.
+
+Set both in `src/config.yaml`:
+
+```yaml
+recording_options:
+  activation_key: f13          # whatever Repilot is set to emit
+  recording_mode: press_to_toggle
+```
+
+On laptops where the top row is the media row (most modern laptops, including the
+Dell XPS 16), `F1`–`F12` require holding **Fn**. Avoid Fn chords for a hotkey —
+they are awkward and fragile under `pynput`. `f13`–`f24` have no other job on most
+keyboards and are the safest function-key range if you want one.
 
 ## Getting started
 
