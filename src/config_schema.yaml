@@ -198,4 +198,4 @@ misc:
   autostart:
     value: false
     type: bool
-    description: "Start WhisperWriter automatically when Windows starts."
+    description: "Start ghosttype automatically when Windows starts."

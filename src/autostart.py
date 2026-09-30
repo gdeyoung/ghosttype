@@ -3,7 +3,7 @@ import os
 import winreg
 
 _RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
-_APP_NAME = "WhisperWriter"
+_APP_NAME = "ghosttype"
 
 
 def _base_dir():

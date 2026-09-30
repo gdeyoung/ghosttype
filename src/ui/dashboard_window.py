@@ -15,6 +15,19 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ui import theme
 from utils import ConfigManager
 from models import list_installed_models, list_selectable_models
+from brand import (
+    AUTOSTART_LABEL, BTN_CANCEL, BTN_CLEAR_ALL, BTN_PREVIEW, BTN_PRESS_KEYS,
+    BTN_RECORD, BTN_SAVE, BTN_STOP, COMPLETION_SOUND_LABEL, COMPLETION_SOUNDS,
+    COMPUTE_TYPE_LABEL, COPY_TOOLTIP, DASHBOARD_BYLINE, DASHBOARD_TITLE,
+    DELETE_TOOLTIP, DEVICE_LABEL, HIDE_STATUS_LABEL, HISTORY_EMPTY,
+    HISTORY_HEADING, HISTORY_SEARCH_PLACEHOLDER, HOTKEY_HEADING,
+    HOTKEY_INSTRUCTION, HOTKEY_LABEL, HOTKEY_SAVE_HINT, INSERT_TOOLTIP,
+    LANGS, LANG_FIELD_LABEL, LANG_FIELD_TOOLTIP, LABEL_MODEL, MODES,
+    POSTPROC_ADD_SPACE, POSTPROC_CAPITALIZE, POSTPROC_PLAY_SOUND,
+    RECORDING_MODE_LABEL, REPLACEMENTS_LABEL, REPLACEMENTS_TOOLTIP,
+    SETTINGS_HEADING, SETTINGS_NOTE, STATUS_MAP, TASKS,
+    TASK_FIELD_LABEL, TASK_FIELD_TOOLTIP, THEME_LABEL, THEMES, VOLUME_LABEL,
+)
 import autostart
 
 
@@ -93,16 +106,16 @@ class HotkeyCaptureDialog(QDialog):
         lay.setContentsMargins(22, 20, 22, 18)
         lay.setSpacing(12)
 
-        title = QLabel('Назначение горячей клавиши')
+        title = QLabel(HOTKEY_HEADING)
         title.setObjectName('PageTitle')
         lay.addWidget(title)
 
-        self.combo_label = QLabel('Зажмите сочетание…')
+        self.combo_label = QLabel('Hold a combination…')
         self.combo_label.setObjectName('HotkeyDisplay')
         self.combo_label.setAlignment(Qt.AlignCenter)
         lay.addWidget(self.combo_label)
 
-        hint = QLabel('Например: Ctrl + Win, либо Ctrl + Shift + Space.\nОтпустите клавиши и нажмите «Сохранить».')
+        hint = QLabel(HOTKEY_SAVE_HINT)
         hint.setObjectName('Hint')
         hint.setAlignment(Qt.AlignCenter)
         hint.setWordWrap(True)
@@ -110,11 +123,11 @@ class HotkeyCaptureDialog(QDialog):
 
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
-        cancel = QPushButton('Отмена')
+        cancel = QPushButton(BTN_CANCEL)
         cancel.setObjectName('Ghost')
         cancel.setCursor(Qt.PointingHandCursor)
         cancel.clicked.connect(self.reject)
-        ok = QPushButton('Сохранить')
+        ok = QPushButton(BTN_SAVE)
         ok.setObjectName('Primary')
         ok.setCursor(Qt.PointingHandCursor)
         ok.clicked.connect(self._accept)
@@ -174,11 +187,11 @@ class DashboardWindow(QMainWindow):
     reinsertRequested = pyqtSignal(str)   # type this text into the active window
 
     STATUS_LABELS = {
-        'idle': 'Готов',
-        'recording': 'Слушаю…',
-        'transcribing': 'Распознаю…',
-        'loading': 'Загрузка модели…',
-        'error': 'Ошибка',
+        'idle': STATUS_MAP['idle'],
+        'recording': STATUS_MAP['recording'],
+        'transcribing': STATUS_MAP['transcribing'],
+        'loading': STATUS_MAP['loading'],
+        'error': STATUS_MAP['error'],
     }
 
     def __init__(self, history_store):
@@ -188,7 +201,7 @@ class DashboardWindow(QMainWindow):
         self._is_recording = False
         self._installed_models = list_installed_models()
 
-        self.setWindowTitle('WhisperWriter by CatBoneheaD')
+        self.setWindowTitle(DASHBOARD_TITLE)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.resize(940, 660)
@@ -229,9 +242,9 @@ class DashboardWindow(QMainWindow):
         logo_path = os.path.join('assets', 'ww-logo.png')
         if os.path.exists(logo_path):
             logo.setPixmap(QPixmap(logo_path).scaled(22, 22, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        title = QLabel('WhisperWriter')
+        title = QLabel(DASHBOARD_TITLE)
         title.setObjectName('TitleLabel')
-        byline = QLabel('by CatBoneheaD')
+        byline = QLabel(DASHBOARD_BYLINE)
         byline.setObjectName('Byline')
 
         lay.addWidget(logo)
@@ -267,7 +280,7 @@ class DashboardWindow(QMainWindow):
 
         self._nav_buttons = []
         self._nav_group = QButtonGroup(self)
-        for i, (label, _) in enumerate([('  История', 0), ('  Настройки', 1)]):
+        for i, (label, _) in enumerate([('  History', 0), ('  Settings', 1)]):
             btn = QPushButton(label)
             btn.setObjectName('NavBtn')
             btn.setCheckable(True)
@@ -289,14 +302,14 @@ class DashboardWindow(QMainWindow):
         row = QHBoxLayout()
         row.setSpacing(8)
         self.status_dot = StatusDot()
-        self.status_text = QLabel('Готов')
+        self.status_text = QLabel(STATUS_MAP['idle'])
         self.status_text.setObjectName('StatusText')
         row.addWidget(self.status_dot)
         row.addWidget(self.status_text)
         row.addStretch(1)
         sb.addLayout(row)
 
-        model_lbl = QLabel('Модель')
+        model_lbl = QLabel(LABEL_MODEL)
         model_lbl.setObjectName('StatusSub')
         sb.addWidget(model_lbl)
 
@@ -314,7 +327,7 @@ class DashboardWindow(QMainWindow):
 
         lay.addWidget(status_box)
 
-        credit = QLabel('made by CatBoneheaD')
+        credit = QLabel('local Whisper · GPLv3')
         credit.setObjectName('Credit')
         credit.setAlignment(Qt.AlignCenter)
         lay.addWidget(credit)
@@ -334,11 +347,11 @@ class DashboardWindow(QMainWindow):
         lay.setSpacing(12)
 
         header = QHBoxLayout()
-        title = QLabel('История')
+        title = QLabel(HISTORY_HEADING)
         title.setObjectName('PageTitle')
         header.addWidget(title)
         header.addStretch(1)
-        clear_btn = QPushButton('Очистить всё')
+        clear_btn = QPushButton(BTN_CLEAR_ALL)
         clear_btn.setObjectName('Ghost')
         clear_btn.setCursor(Qt.PointingHandCursor)
         clear_btn.clicked.connect(self._clear_history)
@@ -346,7 +359,7 @@ class DashboardWindow(QMainWindow):
         lay.addLayout(header)
 
         self.search = QLineEdit()
-        self.search.setPlaceholderText('🔍  Поиск по транскрипциям…')
+        self.search.setPlaceholderText(HISTORY_SEARCH_PLACEHOLDER)
         self.search.textChanged.connect(self.refresh_history)
         lay.addWidget(self.search)
 
@@ -360,7 +373,7 @@ class DashboardWindow(QMainWindow):
         scroll.setWidget(self.history_container)
         lay.addWidget(scroll, 1)
 
-        self.record_btn = QPushButton('🎙  Записать  (или горячая клавиша)')
+        self.record_btn = QPushButton('🎙  ' + BTN_RECORD)
         self.record_btn.setObjectName('RecordBtn')
         self.record_btn.setCursor(Qt.PointingHandCursor)
         self.record_btn.clicked.connect(self.recordToggle.emit)
@@ -374,7 +387,7 @@ class DashboardWindow(QMainWindow):
         outer.setContentsMargins(2, 2, 2, 2)
         outer.setSpacing(12)
 
-        title = QLabel('Настройки')
+        title = QLabel(SETTINGS_HEADING)
         title.setObjectName('PageTitle')
         outer.addWidget(title)
 
@@ -396,7 +409,7 @@ class DashboardWindow(QMainWindow):
         r = 0
         # Hotkey: manual field + "press keys" capture button
         self.f_hotkey = QLineEdit(ConfigManager.get_config_value('recording_options', 'activation_key') or '')
-        capture_btn = QPushButton('⌨  Нажать клавиши')
+        capture_btn = QPushButton('⌨  ' + BTN_PRESS_KEYS)
         capture_btn.setObjectName('Ghost')
         capture_btn.setCursor(Qt.PointingHandCursor)
         capture_btn.clicked.connect(self._capture_hotkey)
@@ -407,13 +420,13 @@ class DashboardWindow(QMainWindow):
         hk_box = QVBoxLayout()
         hk_box.setSpacing(3)
         hk_box.addLayout(hk_row)
-        hk_hint = QLabel('Нажмите кнопку и зажмите нужное сочетание (например Ctrl+Win) — или впишите вручную.')
+        hk_hint = QLabel(HOTKEY_INSTRUCTION)
         hk_hint.setObjectName('Hint')
         hk_hint.setWordWrap(True)
         hk_box.addWidget(hk_hint)
         hk_host = QWidget()
         hk_host.setLayout(hk_box)
-        hk_lbl = QLabel('Горячая клавиша')
+        hk_lbl = QLabel(HOTKEY_LABEL)
         hk_lbl.setObjectName('FieldLabel')
         grid.addWidget(hk_lbl, r, 0, Qt.AlignTop | Qt.AlignRight)
         grid.addWidget(hk_host, r, 1)
@@ -422,40 +435,31 @@ class DashboardWindow(QMainWindow):
         # Recording mode
         self.f_mode = QComboBox()
         self._modes = ['continuous', 'voice_activity_detection', 'press_to_toggle', 'hold_to_record']
-        mode_labels = ['Непрерывный', 'По тишине (VAD)', 'Переключатель', 'Удержание']
-        self.f_mode.addItems(mode_labels)
+        self.f_mode.addItems(MODES)
         cur_mode = ConfigManager.get_config_value('recording_options', 'recording_mode')
         if cur_mode in self._modes:
             self.f_mode.setCurrentIndex(self._modes.index(cur_mode))
-        r = self._add_field(grid, r, 'Режим записи', self.f_mode)
+        r = self._add_field(grid, r, RECORDING_MODE_LABEL, self.f_mode)
 
         # Language (dropdown)
         self.f_lang = QComboBox()
-        self._langs = [
-            ('Авто (определять)', ''),
-            ('Русский', 'ru'), ('Английский', 'en'), ('Испанский', 'es'),
-            ('Итальянский', 'it'), ('Французский', 'fr'), ('Немецкий', 'de'),
-            ('Португальский', 'pt'), ('Польский', 'pl'), ('Украинский', 'uk'),
-            ('Китайский', 'zh'), ('Японский', 'ja'), ('Турецкий', 'tr'),
-        ]
+        self._langs = list(LANGS)  # imported from brand
         for label, code in self._langs:
             self.f_lang.addItem(label, code)
         cur_lang = ConfigManager.get_config_value('model_options', 'common', 'language') or ''
         self.f_lang.setCurrentIndex(
             next((i for i, (l, c) in enumerate(self._langs) if c == cur_lang), 0))
-        r = self._add_field(grid, r, 'Язык', self.f_lang, 'Язык речи (или «Авто» — определить автоматически).')
+        r = self._add_field(grid, r, LANG_FIELD_LABEL, self.f_lang, LANG_FIELD_TOOLTIP)
 
         # Task: transcribe vs translate-to-English
         self.f_task = QComboBox()
-        self._tasks = [('Транскрибация (как сказано)', 'transcribe'),
-                       ('Перевод на английский', 'translate')]
+        self._tasks = list(TASKS)  # imported from brand
         for label, code in self._tasks:
             self.f_task.addItem(label, code)
         cur_task = ConfigManager.get_config_value('model_options', 'common', 'task') or 'transcribe'
         self.f_task.setCurrentIndex(
             next((i for i, (l, c) in enumerate(self._tasks) if c == cur_task), 0))
-        r = self._add_field(grid, r, 'Режим распознавания', self.f_task,
-                            'Перевод возможен только на английский (ограничение Whisper).')
+        r = self._add_field(grid, r, TASK_FIELD_LABEL, self.f_task, TASK_FIELD_TOOLTIP)
 
         # Device
         self.f_device = QComboBox()
@@ -464,7 +468,7 @@ class DashboardWindow(QMainWindow):
         cur_dev = ConfigManager.get_config_value('model_options', 'local', 'device')
         if cur_dev in self._devices:
             self.f_device.setCurrentIndex(self._devices.index(cur_dev))
-        r = self._add_field(grid, r, 'Устройство', self.f_device)
+        r = self._add_field(grid, r, DEVICE_LABEL, self.f_device)
 
         # Compute type
         self.f_compute = QComboBox()
@@ -473,59 +477,52 @@ class DashboardWindow(QMainWindow):
         cur_ct = ConfigManager.get_config_value('model_options', 'local', 'compute_type')
         if cur_ct in self._computes:
             self.f_compute.setCurrentIndex(self._computes.index(cur_ct))
-        r = self._add_field(grid, r, 'Тип вычислений', self.f_compute)
+        r = self._add_field(grid, r, COMPUTE_TYPE_LABEL, self.f_compute)
 
         # Theme
         self.f_theme = QComboBox()
-        self._themes = [('Тёмная', 'dark'), ('Светлая', 'light')]
+        self._themes = list(THEMES)  # imported from brand
         for label, code in self._themes:
             self.f_theme.addItem(label, code)
         cur_theme = ConfigManager.get_config_value('misc', 'theme') or 'dark'
         self.f_theme.setCurrentIndex(
             next((i for i, (l, c) in enumerate(self._themes) if c == cur_theme), 0))
-        r = self._add_field(grid, r, 'Тема оформления', self.f_theme)
+        r = self._add_field(grid, r, THEME_LABEL, self.f_theme)
 
         # Replacements editor
         self.f_replacements = QPlainTextEdit()
-        self.f_replacements.setPlaceholderText('новая строка => \\n\nточка => .\nзапятая => ,')
+        self.f_replacements.setPlaceholderText('new line => \\n\nperiod => .\ncomma => ,')
         self.f_replacements.setFixedHeight(110)
         rules = ConfigManager.get_config_value('post_processing', 'replacements') or []
         self.f_replacements.setPlainText('\n'.join(rules))
-        r = self._add_field(grid, r, 'Замены текста', self.f_replacements,
-                            'По строке: «фраза => замена». Голосовые команды, пунктуация, переносы (\\n).')
+        r = self._add_field(grid, r, REPLACEMENTS_LABEL, self.f_replacements,
+                            REPLACEMENTS_TOOLTIP)
 
         # Checkboxes
         self.f_trailing_space = self._make_check(
-            'Добавлять пробел в конце',
+            POSTPROC_ADD_SPACE,
             bool(ConfigManager.get_config_value('post_processing', 'add_trailing_space')))
         grid.addWidget(self.f_trailing_space, r, 1); r += 1
 
         self.f_capitalize = self._make_check(
-            'Заглавная буква в начале предложений',
+            POSTPROC_CAPITALIZE,
             bool(ConfigManager.get_config_value('post_processing', 'capitalize_sentences')))
         grid.addWidget(self.f_capitalize, r, 1); r += 1
 
         self.f_noise = self._make_check(
-            'Звук по завершении',
+            POSTPROC_PLAY_SOUND,
             bool(ConfigManager.get_config_value('misc', 'noise_on_completion')))
         grid.addWidget(self.f_noise, r, 1); r += 1
 
         # Completion sound: pick a sound + volume + preview
         self.f_sound = QComboBox()
-        self._sounds = [
-            ('Мягкий', 'assets/sounds/soft.wav'),
-            ('Колокольчик', 'assets/sounds/ding.wav'),
-            ('Поп', 'assets/sounds/pop.wav'),
-            ('Маримба', 'assets/sounds/marimba.wav'),
-            ('Блип', 'assets/sounds/blip.wav'),
-            ('Бип (старый)', 'assets/beep.wav'),
-        ]
+        self._sounds = list(COMPLETION_SOUNDS)  # imported from brand
         for label, pth in self._sounds:
             self.f_sound.addItem(label, pth)
         cur_sound = ConfigManager.get_config_value('misc', 'completion_sound') or 'assets/sounds/soft.wav'
         self.f_sound.setCurrentIndex(
             next((i for i, (l, pth) in enumerate(self._sounds) if pth == cur_sound), 0))
-        preview_btn = QPushButton('▶ Прослушать')
+        preview_btn = QPushButton(BTN_PREVIEW)
         preview_btn.setObjectName('Ghost')
         preview_btn.setCursor(Qt.PointingHandCursor)
         preview_btn.clicked.connect(self._preview_sound)
@@ -536,38 +533,38 @@ class DashboardWindow(QMainWindow):
         self.f_volume.setRange(0, 100)
         self.f_volume.setValue(int(ConfigManager.get_config_value('misc', 'completion_volume') or 35))
         self.f_volume.setCursor(Qt.PointingHandCursor)
-        self.vol_label = QLabel(f'Громкость: {self.f_volume.value()}%')
+        self.vol_label = QLabel(VOLUME_LABEL.format(pct=self.f_volume.value()))
         self.vol_label.setObjectName('Hint')
-        self.f_volume.valueChanged.connect(lambda v: self.vol_label.setText(f'Громкость: {v}%'))
+        self.f_volume.valueChanged.connect(lambda v: self.vol_label.setText(VOLUME_LABEL.format(pct=v)))
 
         sbox = QVBoxLayout(); sbox.setSpacing(6)
         sbox.addLayout(srow)
         sbox.addWidget(self.f_volume)
         sbox.addWidget(self.vol_label)
         shost = QWidget(); shost.setLayout(sbox)
-        slbl = QLabel('Звук завершения'); slbl.setObjectName('FieldLabel')
+        slbl = QLabel(COMPLETION_SOUND_LABEL); slbl.setObjectName('FieldLabel')
         grid.addWidget(slbl, r, 0, Qt.AlignTop | Qt.AlignRight)
         grid.addWidget(shost, r, 1); r += 1
 
         self.f_hide_status = self._make_check(
-            'Скрывать всплывающий индикатор записи',
+            HIDE_STATUS_LABEL,
             bool(ConfigManager.get_config_value('misc', 'hide_status_window')))
         grid.addWidget(self.f_hide_status, r, 1); r += 1
 
-        self.f_autostart = self._make_check('Запускать при старте Windows', autostart.is_enabled())
+        self.f_autostart = self._make_check(AUTOSTART_LABEL, autostart.is_enabled())
         grid.addWidget(self.f_autostart, r, 1); r += 1
 
         scroll.setWidget(form_host)
         outer.addWidget(scroll, 1)
 
-        note = QLabel('Настройки применяются сразу после сохранения.')
+        note = QLabel(SETTINGS_NOTE)
         note.setObjectName('Hint')
         note.setWordWrap(True)
         outer.addWidget(note)
 
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
-        save_btn = QPushButton('Сохранить')
+        save_btn = QPushButton(BTN_SAVE)
         save_btn.setObjectName('Primary')
         save_btn.setCursor(Qt.PointingHandCursor)
         save_btn.clicked.connect(self._save_settings)
@@ -632,7 +629,7 @@ class DashboardWindow(QMainWindow):
         rows = self.history.list(query)
 
         if not rows:
-            empty = QLabel('Здесь появятся ваши транскрипции.\nНажмите горячую клавишу и начните говорить.')
+            empty = QLabel(HISTORY_EMPTY)
             empty.setObjectName('EmptyHint')
             empty.setAlignment(Qt.AlignCenter)
             self.history_layout.insertWidget(0, empty)
@@ -657,21 +654,21 @@ class DashboardWindow(QMainWindow):
         insert_btn = QPushButton('▸')
         insert_btn.setObjectName('IconBtn')
         insert_btn.setFixedSize(28, 26)
-        insert_btn.setToolTip('Вставить в активное окно')
+        insert_btn.setToolTip(INSERT_TOOLTIP)
         insert_btn.setCursor(Qt.PointingHandCursor)
         insert_btn.clicked.connect(lambda _, t=row['text']: self._reinsert(t))
 
         copy_btn = QPushButton('⧉')
         copy_btn.setObjectName('IconBtn')
         copy_btn.setFixedSize(28, 26)
-        copy_btn.setToolTip('Копировать')
+        copy_btn.setToolTip(COPY_TOOLTIP)
         copy_btn.setCursor(Qt.PointingHandCursor)
         copy_btn.clicked.connect(lambda _, t=row['text']: self._copy(t))
 
         del_btn = QPushButton('🗑')
         del_btn.setObjectName('IconBtn')
         del_btn.setFixedSize(28, 26)
-        del_btn.setToolTip('Удалить')
+        del_btn.setToolTip(DELETE_TOOLTIP)
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.clicked.connect(lambda _, i=row['id']: self._delete(i))
 
@@ -702,7 +699,7 @@ class DashboardWindow(QMainWindow):
 
     def _copy(self, text):
         QApplication.clipboard().setText(text)
-        self.status_text.setText('Скопировано ✓')
+        self.status_text.setText('Copied ✓')
 
     def _reinsert(self, text):
         # Hide the window so focus returns to the previous app, then type there.
@@ -730,7 +727,7 @@ class DashboardWindow(QMainWindow):
             if m['name'] == cur_name:
                 selected = i
         self.model_combo.setItemData(
-            0, 'Модели: ✓ — установлена, ⬇ — скачается при выборе', Qt.ToolTipRole)
+            0, 'Models: ✓ installed, ⬇ will download on select', Qt.ToolTipRole)
         self.model_combo.setCurrentIndex(selected)
         self.model_combo.blockSignals(False)
 
@@ -790,8 +787,8 @@ class DashboardWindow(QMainWindow):
 
     def set_recording(self, is_recording):
         self._is_recording = is_recording
-        self.record_btn.setText('■  Остановить запись' if is_recording
-                                else '🎙  Записать  (или горячая клавиша)')
+        self.record_btn.setText('■  ' + BTN_STOP if is_recording
+                                else '🎙  ' + BTN_RECORD)
         self.record_btn.setProperty('recording', 'true' if is_recording else 'false')
         self.record_btn.style().unpolish(self.record_btn)
         self.record_btn.style().polish(self.record_btn)
