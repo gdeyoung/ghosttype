@@ -239,7 +239,7 @@ class DashboardWindow(QMainWindow):
         lay.setSpacing(8)
 
         logo = QLabel()
-        logo_path = os.path.join('assets', 'ww-logo.png')
+        logo_path = os.path.join('assets', 'ghosttype.png')
         if os.path.exists(logo_path):
             logo.setPixmap(QPixmap(logo_path).scaled(22, 22, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         title = QLabel(DASHBOARD_TITLE)

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 from ui import theme
 from brand import APP_ID, APP_FULL, APP_NAME, SINGLETON_KEY, TRAY_MENU_EXIT, TRAY_MENU_OPEN, TRAY_MENU_SETTINGS, TRAY_TOOLTIP
 
-ICON_PATH = os.path.join('assets', 'ww-logo.ico')
+ICON_PATH = os.path.join('assets', 'ghosttype.ico')
 
 from key_listener import KeyListener
 from result_thread import ResultThread

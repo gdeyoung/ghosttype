@@ -19,7 +19,7 @@ SINGLETON_KEY = 'ghosttype-singleton-v1'
 AUTOSTART_REGISTRY_NAME = 'ghosttype'
 
 # Tray icon.
-TRAY_TOOLTIP = 'ghosttype — hold F9 to dictate'
+TRAY_TOOLTIP = 'ghosttype — press your hotkey to start/stop dictation'
 
 # Tray context menu.
 TRAY_MENU_OPEN = 'Open ghosttype'
