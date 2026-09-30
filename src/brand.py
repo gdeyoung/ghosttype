@@ -64,7 +64,7 @@ BTN_PREVIEW = '▶ Preview'
 # voice_activity_detection, press_to_toggle, hold_to_record).
 MODE_CONTINUOUS = 'Continuous'
 MODE_VAD = 'On silence (VAD)'
-MODE_TOGGLE = 'Toggle'
+MODE_TOGGLE = 'Press to start / stop'
 MODE_HOLD = 'Hold to talk'
 MODES = [MODE_CONTINUOUS, MODE_VAD, MODE_TOGGLE, MODE_HOLD]
 
