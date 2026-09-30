@@ -156,7 +156,7 @@ post_processing:
   replacements:
     value: []
     type: list
-    description: "Spoken-to-text replacements applied after transcription, each as 'phrase => replacement' (e.g. 'новая строка => \\n')."
+    description: "Spoken-to-text replacements applied after transcription, each as 'phrase => replacement' (e.g. 'new line => \\n')."
   input_method:
     value: pynput
     type: str

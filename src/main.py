@@ -3,7 +3,7 @@ import sys
 import time
 import ctypes
 from PyQt5.QtCore import QObject, QProcess, QThread, QSharedMemory, QTimer, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 
 from ui import theme
@@ -63,6 +63,15 @@ class WhisperWriterApp(QObject):
         self.app.setApplicationName(APP_NAME)
         self._app_icon = QIcon(ICON_PATH)
         self.app.setWindowIcon(self._app_icon)
+
+        # Base font. Qt's inherited default here is 8pt "MS Shell Dlg 2", which on a
+        # 4K/200%-scaled display renders far too small to read. HiDPI scaling alone
+        # does NOT fix this — it scales whatever size it is handed. The dashboard
+        # creates ~45 widgets with only one explicit setFont(), so the app-wide font
+        # is what almost every label, button and dropdown inherits. Set it once here.
+        base_font = QFont('Segoe UI', 10)
+        base_font.setHintingPreference(QFont.PreferFullHinting)
+        self.app.setFont(base_font)
 
         # Single-instance guard: if another copy is already running, bail out so we
         # don't get two key listeners typing the same text twice.
@@ -357,5 +366,12 @@ class WhisperWriterApp(QObject):
 
 
 if __name__ == '__main__':
+    # Only reached if someone runs `python src/main.py` directly. Normal launches
+    # go through run.py, which MUST own startup: it scrubs PYTHONPATH, fixes the
+    # CUDA DLL order, and preloads the model BEFORE PyQt5 imports (a load after Qt
+    # segfaults on the ctranslate2/PyQt5 DLL conflict). Running main.py alone skips
+    # all of that, so warn rather than pretend it's equivalent.
+    print('[ghosttype] WARNING: run via run.py, not main.py — model preload order '
+          'is required to avoid the ctranslate2/PyQt5 segfault.', flush=True)
     app = WhisperWriterApp()
     app.run()
