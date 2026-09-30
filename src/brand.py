@@ -28,7 +28,7 @@ TRAY_MENU_EXIT = 'Exit'
 
 # Dashboard title bar.
 DASHBOARD_TITLE = 'ghosttype'
-DASHBOARD_BYLINE = 'hold-to-talk voice typing'
+DASHBOARD_BYLINE = 'voice typing'
 
 # Status messages (keyed by state name).
 STATUS_READY = 'Ready'

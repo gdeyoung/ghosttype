@@ -8,6 +8,25 @@ This is Greg DeYoung's fork of [CatBoneheaD/Whisper-Writer](https://github.com/C
 
 Press your hotkey and speak. Your voice is transcribed locally by faster-whisper and typed into the focused window — same workflow as BoxType/Voxtype on Omarchy Linux. Recording modes include `press_to_toggle` (press once to start, once to stop — the default, and the right choice for remapped keys), `hold_to_record` (BoxType-style push-to-talk), `continuous`, and `voice_activity_detection`.
 
+## Screenshots
+
+**Settings** — hotkey, recording mode, language, device, theme, autostart. No YAML required.
+
+![Settings](assets/screenshot-settings.png)
+
+<details>
+<summary>More settings (text replacements, post-processing, sound)</summary>
+
+![Settings, scrolled](assets/screenshot-settings-scrolled.png)
+
+</details>
+
+**The recording indicator** — a slim pill that appears bottom-centre while you
+speak, showing the state, elapsed time, and live mic level. It never takes
+focus, so the transcribed text goes to the app you were typing in, not here.
+
+![Recording indicator](assets/screenshot-indicator.png)
+
 ## Features
 
 - **Modern dashboard** (Voice Ink-style) with dark & light themes — sidebar with History / Settings, live status indicator.
@@ -18,7 +37,7 @@ Press your hotkey and speak. Your voice is transcribed locally by faster-whisper
 - **Settings UI** — hotkey with press-to-capture, recording mode, language, device, theme, autostart — no YAML required.
 - **Start with Windows** (optional) and **silent launch** via `launch.vbs` — lives in the system tray.
 - **Single-instance guard** — no more doubled text from a second launch.
-- **Hold-to-record** — BoxType-equivalent push-to-talk mode.
+- **Press-to-toggle or hold-to-record** — toggle is the default (and the right choice for remapped keys); BoxType-style push-to-talk is still available.
 
 Transcription runs **locally** by default (faster-whisper), or through the **OpenAI API** if you enable it in Settings.
 
