@@ -136,7 +136,12 @@ class WhisperWriterApp(QObject):
 
         self.create_tray_icon()
         self.key_listener.start()
-        self.dashboard.show()
+        # Default to tray-only. The dashboard is ~940x660, which is roughly a
+        # third of a 1600x1000 screen — showing it on every launch is what made
+        # the app feel like it was taking over the desktop. It is still one
+        # tray click (or double-click the tray icon) away.
+        if not ConfigManager.get_config_value('misc', 'start_minimized'):
+            self.dashboard.show()
 
     def _connect_dashboard(self):
         self.dashboard.recordToggle.connect(self.on_activation)
@@ -351,6 +356,12 @@ class WhisperWriterApp(QObject):
 
         self.input_simulator.typewrite(result, self.target_window)
         self.target_window = None
+
+        # Brief "Typed" acknowledgement in the indicator — the only feedback that
+        # matters for a hands-free flow: you need to know the text actually landed
+        # in the app you were talking to, without looking away from it.
+        if self.status_window and not self.dashboard.isVisible():
+            self.status_window.show_typed(result)
 
         if ConfigManager.get_config_value('misc', 'noise_on_completion'):
             play_completion_sound()

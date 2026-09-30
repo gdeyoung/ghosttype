@@ -37,6 +37,12 @@ STATUS_TRANSCRIBING = 'Transcribing…'
 STATUS_LOADING = 'Loading model…'
 STATUS_ERROR = 'Error'
 
+# Slim floating indicator pill (bottom-centre, never takes focus).
+INDICATOR_READY = 'Ready'
+INDICATOR_LISTENING = 'Listening'
+INDICATOR_TRANSCRIBING = 'Transcribing…'
+INDICATOR_TYPED = 'Typed'
+
 STATUS_MAP = {
     'idle': STATUS_READY,
     'recording': STATUS_LISTENING,

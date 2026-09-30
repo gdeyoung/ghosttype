@@ -175,7 +175,15 @@ misc:
   hide_status_window:
     value: false
     type: bool
-    description: "Set to true to hide the status window during operation."
+    description: "Set to true to hide the floating recording indicator entirely."
+  start_minimized:
+    value: true
+    type: bool
+    description: "Start in the system tray without opening the main window. The window is large; when false it covers roughly a third of the screen on launch."
+  show_transcription_preview:
+    value: true
+    type: bool
+    description: "Show the recognized text briefly in the indicator before it is typed."
   noise_on_completion:
     value: false
     type: bool

@@ -8,15 +8,20 @@ code that reads e.g. theme.TEXT keeps working.
 DARK = {
     'BG': '#15161c', 'SURFACE': '#1e202a', 'SURFACE_2': '#272a36', 'BORDER': '#323645',
     'TEXT': '#e7e9f0', 'TEXT_DIM': '#9aa0b4',
-    'ACCENT': '#7c5cff', 'ACCENT_HOVER': '#8f72ff', 'ACCENT_SOFT': '#2a2546',
+    # Muted slate-blue rather than saturated purple. The old #7c5cff read as
+    # "consumer toy" and fought with the red recording state for attention.
+    'ACCENT': '#4a7fa5', 'ACCENT_HOVER': '#5b93bb', 'ACCENT_SOFT': '#1e2b36',
     'DANGER': '#ff5c72', 'OK': '#46d18b', 'WARN': '#ffb454',
 }
 
 LIGHT = {
-    'BG': '#f3f4f8', 'SURFACE': '#ffffff', 'SURFACE_2': '#eaecf2', 'BORDER': '#d4d8e2',
-    'TEXT': '#1c2030', 'TEXT_DIM': '#697086',
-    'ACCENT': '#6b4dff', 'ACCENT_HOVER': '#5a3df0', 'ACCENT_SOFT': '#e6e0ff',
-    'DANGER': '#e0455a', 'OK': '#1faf6b', 'WARN': '#bf8420',
+    # Warm off-white, not #ffffff. Pure white next to dark text on a laptop
+    # panel is glare; #f7f7f5 keeps the same contrast ratio without the glare.
+    'BG': '#e8e8e6', 'SURFACE': '#f7f7f5', 'SURFACE_2': '#dededb',
+    'BORDER': '#c9c9c4',
+    'TEXT': '#1c2030', 'TEXT_DIM': '#5f6577',
+    'ACCENT': '#3d6b8f', 'ACCENT_HOVER': '#4f829f', 'ACCENT_SOFT': '#dde5ec',
+    'DANGER': '#c8384a', 'OK': '#1a7f52', 'WARN': '#a06a12',
 }
 
 PALETTES = {'dark': DARK, 'light': LIGHT}
