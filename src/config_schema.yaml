@@ -130,6 +130,12 @@ recording_options:
     value: 100
     type: int
     description: "The minimum duration in milliseconds for a recording to be processed. Recordings shorter than this will be discarded."
+  max_recording_minutes:
+    value: 5
+    type: int
+    description: "Hard cap on a single recording, in minutes. Recording stops automatically at this length. Prevents an unbounded take from accumulating hours of audio (which then takes minutes to transcribe) when a start/stop press is missed or swallowed by hotkey debouncing."
+    min: 1
+    max: 15
 
 # Post-processing options for the transcribed text
 post_processing:

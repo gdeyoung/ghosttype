@@ -90,6 +90,9 @@ TASK_FIELD_TOOLTIP = 'Translation only outputs English (Whisper limitation).'
 
 # Settings field labels.
 RECORDING_MODE_LABEL = 'Recording mode'
+MAX_RECORDING_LABEL = 'Max recording length'
+MAX_RECORDING_TOOLTIP = ('Recording stops automatically at this length. Prevents an '
+                         'unbounded take if a stop press is missed.')
 DEVICE_LABEL = 'Device'
 COMPUTE_TYPE_LABEL = 'Compute type'
 

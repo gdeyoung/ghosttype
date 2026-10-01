@@ -23,6 +23,7 @@ from brand import (
     HISTORY_HEADING, HISTORY_SEARCH_PLACEHOLDER, HOTKEY_HEADING,
     HOTKEY_INSTRUCTION, HOTKEY_LABEL, HOTKEY_SAVE_HINT, INSERT_TOOLTIP,
     LANGS, LANG_FIELD_LABEL, LANG_FIELD_TOOLTIP, LABEL_MODEL, MODES,
+    MAX_RECORDING_LABEL, MAX_RECORDING_TOOLTIP,
     POSTPROC_ADD_SPACE, POSTPROC_CAPITALIZE, POSTPROC_PLAY_SOUND,
     RECORDING_MODE_LABEL, REPLACEMENTS_LABEL, REPLACEMENTS_TOOLTIP,
     SETTINGS_HEADING, SETTINGS_NOTE, STATUS_MAP, TASKS,
@@ -441,6 +442,20 @@ class DashboardWindow(QMainWindow):
             self.f_mode.setCurrentIndex(self._modes.index(cur_mode))
         r = self._add_field(grid, r, RECORDING_MODE_LABEL, self.f_mode)
 
+        # Max recording length: 1-15 minutes in 1-minute steps. A hard stop on a
+        # single take, so a missed stop press can't leave it recording for hours.
+        self.f_max_rec = QComboBox()
+        self._max_rec_values = list(range(1, 16))
+        self.f_max_rec.addItems([f'{m} min' + ('  (default)' if m == 5 else '')
+                                 for m in self._max_rec_values])
+        cur_max = ConfigManager.get_config_value('recording_options', 'max_recording_minutes') or 5
+        if cur_max in self._max_rec_values:
+            self.f_max_rec.setCurrentIndex(self._max_rec_values.index(cur_max))
+        else:
+            self.f_max_rec.setCurrentIndex(self._max_rec_values.index(5))
+        r = self._add_field(grid, r, MAX_RECORDING_LABEL, self.f_max_rec,
+                            MAX_RECORDING_TOOLTIP)
+
         # Language (dropdown)
         self.f_lang = QComboBox()
         self._langs = list(LANGS)  # imported from brand
@@ -769,6 +784,9 @@ class DashboardWindow(QMainWindow):
                                        'misc', 'completion_volume')
         ConfigManager.set_config_value(self.f_hide_status.isChecked(),
                                        'misc', 'hide_status_window')
+        ConfigManager.set_config_value(
+            self._max_rec_values[self.f_max_rec.currentIndex()],
+            'recording_options', 'max_recording_minutes')
         # Autostart is applied immediately (registry), and mirrored in config.
         autostart.set_enabled(self.f_autostart.isChecked())
         ConfigManager.set_config_value(self.f_autostart.isChecked(), 'misc', 'autostart')

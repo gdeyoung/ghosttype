@@ -130,6 +130,12 @@ class ResultThread(QThread):
             silent_frame_count = 0
 
         audio_buffer = deque(maxlen=frame_size)
+        # Hard cap on a single take. Without this a missed stop press (or one
+        # swallowed by hotkey debouncing) lets the buffer grow unbounded, and
+        # transcribing hours of audio takes minutes of CPU.
+        max_minutes = recording_options.get('max_recording_minutes') or 5
+        max_samples = int(self.sample_rate * 60 * max(1, min(15, int(max_minutes))))
+        hit_cap = [False]
         recording = []
 
         data_ready = Event()
@@ -156,6 +162,12 @@ class ResultThread(QThread):
                 frame = np.array(list(audio_buffer), dtype=np.int16)
                 audio_buffer.clear()
                 recording.extend(frame)
+
+                if len(recording) >= max_samples:
+                    hit_cap[0] = True
+                    ConfigManager.console_print(
+                        f'Max recording length reached ({max_minutes} min) — stopping.')
+                    break
 
                 # Avoid trying to detect voice in initial frames
                 if initial_frames_to_skip > 0:
