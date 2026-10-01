@@ -61,9 +61,32 @@ jobs:
 
       - name: Pure-logic tests
         # These need no microphone, no model download and no GUI session.
+        # Each test runs independently so a failure names itself, and the
+        # captured output is uploaded as an artifact — the Actions API needs a
+        # token with actions:read to fetch job logs, which a fine-grained PAT
+        # often lacks, so relying on the web log viewer is not always possible.
         run: |
-          python toggle_test.py
-          python sound_test.py
+          $ErrorActionPreference = 'Continue'
+          New-Item -ItemType Directory -Force -Path test-logs | Out-Null
+          $failed = $false
+          foreach ($t in @('toggle_test.py', 'sound_test.py')) {
+            Write-Host "::group::$t"
+            python $t 2>&1 | Tee-Object -FilePath "test-logs/$t.log"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::$t exited $LASTEXITCODE"
+              $failed = $true
+            }
+            Write-Host "::endgroup::"
+          }
+          if ($failed) { exit 1 }
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure-logic-test-logs
+          path: test-logs/
+          retention-days: 7
 
   # Full suites — model, GUI, mic. Run manually or on demand, not on every push,
   # because they download ~150 MB of weights and need a desktop session.

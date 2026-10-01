@@ -138,3 +138,5 @@ log.txt
 debug_run.py
 requirements_utf8.txt
 *.old.*
+# CI artifacts
+test-logs/
