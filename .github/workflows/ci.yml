@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main, ghosttype-init]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch — no point burning minutes on a
+# commit that's already been superseded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The full suites need a model, a GUI and a microphone, so they can't run here.
+  # What CI *can* do cheaply is answer the first question any reviewer asks:
+  # does this still import, and do the pure-logic tests still pass?
+  smoke:
+    name: Import smoke test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install runtime dependencies
+        # `pip install -e .` reads dependencies from pyproject.toml rather than a
+        # hand-maintained list here. The list drifted out of sync with the code
+        # three times — smoke_test.py needed webrtcvad/onnxruntime, and the two
+        # pure-logic tests needed audioplayer (via sound.py) and openai (via
+        # transcription.py). None are obvious from reading a test.
+        #
+        # Deliberately not requirements.txt: that pins exact versions including
+        # nvidia-cublas/cudnn CUDA wheels, irrelevant on a CPU-only runner.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Import check
+        run: python smoke_test.py
+
+      - name: Brand strings resolve
+        # The app once failed to import because 13 constants were imported from
+        # brand.py but never defined. This is a cheap guard against that class
+        # of breakage returning.
+        run: python check_brand.py
+
+      - name: No Cyrillic in shipped source
+        run: |
+          $hits = Get-ChildItem -Recurse -Include *.py,*.yaml,*.vbs -Path src,run.py,launch.vbs |
+                  Select-String -Pattern '[\u0400-\u04FF]'
+          if ($hits) {
+            $hits | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line)" }
+            exit 1
+          }
+          Write-Host "no Cyrillic in shipped source"
+
+      - name: Pure-logic tests
+        # These need no microphone, no model download and no GUI session.
+        # Each test runs independently so a failure names itself, and the
+        # captured output is uploaded as an artifact — the Actions API needs a
+        # token with actions:read to fetch job logs, which a fine-grained PAT
+        # often lacks, so relying on the web log viewer is not always possible.
+        run: |
+          $ErrorActionPreference = 'Continue'
+          New-Item -ItemType Directory -Force -Path test-logs | Out-Null
+          $failed = $false
+          foreach ($t in @('toggle_test.py', 'sound_test.py')) {
+            Write-Host "::group::$t"
+            python $t 2>&1 | Tee-Object -FilePath "test-logs/$t.log"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::$t exited $LASTEXITCODE"
+              $failed = $true
+            }
+            Write-Host "::endgroup::"
+          }
+          if ($failed) { exit 1 }
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure-logic-test-logs
+          path: test-logs/
+          retention-days: 7
+
+  # Full suites — model, GUI, mic. Run manually or on demand, not on every push,
+  # because they download ~150 MB of weights and need a desktop session.
+  full:
+    name: Full suites (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Download a small model
+        run: python download_model.py tiny.en
+      - name: Run the suites
+        run: |
+          python smoke_test_model.py
+          python hidpi_test.py
+          python indicator_test.py
+          python max_recording_test.py

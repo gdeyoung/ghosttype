@@ -2,6 +2,8 @@ from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QPainter, QBrush, QColor, QFont, QPainterPath, QGuiApplication
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow
 
+from brand import APP_NAME
+
 
 class BaseWindow(QMainWindow):
     def __init__(self, title, width, height):
@@ -32,7 +34,7 @@ class BaseWindow(QMainWindow):
         title_bar_layout.setContentsMargins(0, 0, 0, 0)
 
         # Add the title label
-        title_label = QLabel('WhisperWriter')
+        title_label = QLabel(APP_NAME)
         title_label.setFont(QFont('Segoe UI', 12, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet("color: #404040;")

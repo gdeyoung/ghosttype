@@ -130,6 +130,12 @@ recording_options:
     value: 100
     type: int
     description: "The minimum duration in milliseconds for a recording to be processed. Recordings shorter than this will be discarded."
+  max_recording_minutes:
+    value: 5
+    type: int
+    description: "Hard cap on a single recording, in minutes. Recording stops automatically at this length. Prevents an unbounded take from accumulating hours of audio (which then takes minutes to transcribe) when a start/stop press is missed or swallowed by hotkey debouncing."
+    min: 1
+    max: 15
 
 # Post-processing options for the transcribed text
 post_processing:
@@ -156,7 +162,7 @@ post_processing:
   replacements:
     value: []
     type: list
-    description: "Spoken-to-text replacements applied after transcription, each as 'phrase => replacement' (e.g. 'новая строка => \\n')."
+    description: "Spoken-to-text replacements applied after transcription, each as 'phrase => replacement' (e.g. 'new line => \\n')."
   input_method:
     value: pynput
     type: str
@@ -175,7 +181,15 @@ misc:
   hide_status_window:
     value: false
     type: bool
-    description: "Set to true to hide the status window during operation."
+    description: "Set to true to hide the floating recording indicator entirely."
+  start_minimized:
+    value: true
+    type: bool
+    description: "Start in the system tray without opening the main window. The window is large; when false it covers roughly a third of the screen on launch."
+  show_transcription_preview:
+    value: true
+    type: bool
+    description: "Show the recognized text briefly in the indicator before it is typed."
   noise_on_completion:
     value: false
     type: bool
@@ -198,4 +212,4 @@ misc:
   autostart:
     value: false
     type: bool
-    description: "Start WhisperWriter automatically when Windows starts."
+    description: "Start ghosttype automatically when Windows starts."

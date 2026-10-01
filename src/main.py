@@ -3,14 +3,13 @@ import sys
 import time
 import ctypes
 from PyQt5.QtCore import QObject, QProcess, QThread, QSharedMemory, QTimer, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 
 from ui import theme
+from brand import APP_ID, APP_FULL, APP_NAME, SINGLETON_KEY, TRAY_MENU_EXIT, TRAY_MENU_OPEN, TRAY_MENU_SETTINGS, TRAY_TOOLTIP
 
-ICON_PATH = os.path.join('assets', 'ww-logo.ico')
-APP_ID = 'WhisperWriter.VoiceTyping'
-SINGLETON_KEY = 'WhisperWriter-singleton-v1'
+ICON_PATH = os.path.join('assets', 'ghosttype.ico')
 
 from key_listener import KeyListener
 from result_thread import ResultThread
@@ -37,8 +36,22 @@ class ModelLoadThread(QThread):
 
 
 class WhisperWriterApp(QObject):
-    def __init__(self):
+    def __init__(self, preloaded_model=None):
+        """``preloaded_model`` is the WhisperModel run.py loaded BEFORE PyQt5 was
+        imported (see run.py:_preload_whisper_model — the ctranslate2/PyQt5 DLL
+        conflict makes a post-Qt load segfault). None means the preload failed or
+        API mode is on; we fall back to loading lazily off the UI thread."""
         super().__init__()
+        # HiDPI: Qt5 needs to be told explicitly, or on a 4K/150%-scaled display
+        # every widget renders at 1x physical pixels and the UI looks tiny.
+        # Must be set BEFORE the QApplication below is constructed.
+        try:
+            from PyQt5.QtCore import Qt
+            from PyQt5.QtWidgets import QApplication
+            QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+            QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+        except Exception as e:
+            print(f'[ghosttype] WARNING: HiDPI attributes not set: {e}', flush=True)
         # Make Windows treat this as its own app (own taskbar icon, not pythonw's).
         try:
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
@@ -47,15 +60,24 @@ class WhisperWriterApp(QObject):
 
         self.app = QApplication(sys.argv)
         self.app.setQuitOnLastWindowClosed(False)
-        self.app.setApplicationName('WhisperWriter by CatBoneheaD')
+        self.app.setApplicationName(APP_NAME)
         self._app_icon = QIcon(ICON_PATH)
         self.app.setWindowIcon(self._app_icon)
+
+        # Base font. Qt's inherited default here is 8pt "MS Shell Dlg 2", which on a
+        # 4K/200%-scaled display renders far too small to read. HiDPI scaling alone
+        # does NOT fix this — it scales whatever size it is handed. The dashboard
+        # creates ~45 widgets with only one explicit setFont(), so the app-wide font
+        # is what almost every label, button and dropdown inherits. Set it once here.
+        base_font = QFont('Segoe UI', 10)
+        base_font.setHintingPreference(QFont.PreferFullHinting)
+        self.app.setFont(base_font)
 
         # Single-instance guard: if another copy is already running, bail out so we
         # don't get two key listeners typing the same text twice.
         self._shared = QSharedMemory(SINGLETON_KEY)
         if not self._shared.create(1):
-            print('WhisperWriter is already running. Exiting this instance.')
+            print('ghosttype is already running. Exiting this instance.')
             sys.exit(0)
 
         ConfigManager.initialize()
@@ -68,6 +90,9 @@ class WhisperWriterApp(QObject):
         self.model_loader = None
         self._cur_device = None
         self._cur_compute = None
+
+        # Stash the preloaded model for initialize_components() to pick up.
+        self._preloaded_model = preloaded_model
 
         self.initialize_components()
 
@@ -82,7 +107,19 @@ class WhisperWriterApp(QObject):
         model_options = ConfigManager.get_config_section('model_options')
         self._cur_device = ConfigManager.get_config_value('model_options', 'local', 'device')
         self._cur_compute = ConfigManager.get_config_value('model_options', 'local', 'compute_type')
-        self.local_model = create_local_model() if not model_options.get('use_api') else None
+        # Model is loaded in run.py BEFORE PyQt5 imports (DLL conflict avoidance),
+        # and handed to us via the constructor. If the preload failed (or API mode
+        # is on) we retry once off the UI thread so the dashboard isn't blocked.
+        if model_options.get('use_api'):
+            self.local_model = None
+        elif self._preloaded_model is not None:
+            self.local_model = self._preloaded_model
+            print('[ghosttype] Using model preloaded before Qt init.', flush=True)
+        else:
+            self.local_model = None
+            self.model_loader = ModelLoadThread()
+            self.model_loader.loaded.connect(self._on_model_loaded)
+            self.model_loader.start()
 
         self.result_thread = None
         self.target_window = None
@@ -99,7 +136,12 @@ class WhisperWriterApp(QObject):
 
         self.create_tray_icon()
         self.key_listener.start()
-        self.dashboard.show()
+        # Default to tray-only. The dashboard is ~940x660, which is roughly a
+        # third of a 1600x1000 screen — showing it on every launch is what made
+        # the app feel like it was taking over the desktop. It is still one
+        # tray click (or double-click the tray icon) away.
+        if not ConfigManager.get_config_value('misc', 'start_minimized'):
+            self.dashboard.show()
 
     def _connect_dashboard(self):
         self.dashboard.recordToggle.connect(self.on_activation)
@@ -110,21 +152,21 @@ class WhisperWriterApp(QObject):
     def create_tray_icon(self):
         """Create the system tray icon and its context menu."""
         self.tray_icon = QSystemTrayIcon(self._app_icon, self.app)
-        self.tray_icon.setToolTip('WhisperWriter by CatBoneheaD')
+        self.tray_icon.setToolTip(TRAY_TOOLTIP)
 
         tray_menu = QMenu()
 
-        show_action = QAction('Открыть WhisperWriter', self.app)
+        show_action = QAction(TRAY_MENU_OPEN, self.app)
         show_action.triggered.connect(self.show_dashboard)
         tray_menu.addAction(show_action)
 
-        settings_action = QAction('Настройки', self.app)
+        settings_action = QAction(TRAY_MENU_SETTINGS, self.app)
         settings_action.triggered.connect(self.open_settings)
         tray_menu.addAction(settings_action)
 
         tray_menu.addSeparator()
 
-        exit_action = QAction('Выход', self.app)
+        exit_action = QAction(TRAY_MENU_EXIT, self.app)
         exit_action.triggered.connect(self.exit_app)
         tray_menu.addAction(exit_action)
 
@@ -275,6 +317,13 @@ class WhisperWriterApp(QObject):
         if self.result_thread and self.result_thread.isRunning():
             return
 
+        if self.local_model is None:
+            self.dashboard.set_status('error')
+            ConfigManager.console_print(
+                'No local model loaded — transcription would fail. '
+                'Pick a model in Settings to (re)load it.')
+            return
+
         self.result_thread = ResultThread(self.local_model)
         self.result_thread.statusSignal.connect(self.on_status_update)
         if self.status_window:
@@ -308,6 +357,12 @@ class WhisperWriterApp(QObject):
         self.input_simulator.typewrite(result, self.target_window)
         self.target_window = None
 
+        # Brief "Typed" acknowledgement in the indicator — the only feedback that
+        # matters for a hands-free flow: you need to know the text actually landed
+        # in the app you were talking to, without looking away from it.
+        if self.status_window and not self.dashboard.isVisible():
+            self.status_window.show_typed(result)
+
         if ConfigManager.get_config_value('misc', 'noise_on_completion'):
             play_completion_sound()
 
@@ -322,5 +377,12 @@ class WhisperWriterApp(QObject):
 
 
 if __name__ == '__main__':
+    # Only reached if someone runs `python src/main.py` directly. Normal launches
+    # go through run.py, which MUST own startup: it scrubs PYTHONPATH, fixes the
+    # CUDA DLL order, and preloads the model BEFORE PyQt5 imports (a load after Qt
+    # segfaults on the ctranslate2/PyQt5 DLL conflict). Running main.py alone skips
+    # all of that, so warn rather than pretend it's equivalent.
+    print('[ghosttype] WARNING: run via run.py, not main.py — model preload order '
+          'is required to avoid the ctranslate2/PyQt5 segfault.', flush=True)
     app = WhisperWriterApp()
     app.run()

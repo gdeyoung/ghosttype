@@ -1,4 +1,4 @@
-' Launch WhisperWriter silently (no console window) using pythonw.exe.
+' Launch ghosttype silently (no console window) using pythonw.exe.
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set sh = CreateObject("WScript.Shell")
 
