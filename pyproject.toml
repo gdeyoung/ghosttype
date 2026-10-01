@@ -1,0 +1,40 @@
+[build-system]
+# Placeholder so this file exists; ghosttype is not distributed as a package.
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghosttype"
+version = "0.1.0"
+description = "Offline push-to-talk voice typing for Windows"
+requires-python = ">=3.11,<3.12"
+
+# Only the runtime deps the CI smoke job needs — imports, PyQt5, and the audio
+# stack. Deliberately NOT requirements.txt: that file pins exact versions
+# including nvidia-cublas/cudnn CUDA wheels, which are irrelevant on a CPU-only
+# runner and slow to fetch. Kept unpinned so CI resolves what it needs.
+#
+# This file exists so CI can `pip install -e .` and stop hand-maintaining a
+# package list. That list previously drifted out of sync with the code and broke
+# the build three times: smoke_test.py needed webrtcvad/onnxruntime, the two
+# pure-logic tests needed audioplayer (via sound.py) and openai (via
+# transcription.py). None of those are obvious from reading a test.
+dependencies = [
+    "faster-whisper",
+    "pynput",
+    "sounddevice",
+    "soundfile",
+    "webrtcvad-wheels",
+    "onnxruntime",
+    "huggingface_hub",
+    "numpy",
+    "pyyaml",
+    "requests",
+    "PyQt5",
+    "audioplayer",
+    "openai",
+]
+
+[tool.setuptools]
+# A config/metadata-only project: the app is run from the repo, not installed.
+packages = []

@@ -28,15 +28,17 @@ jobs:
           cache: pip
 
       - name: Install runtime dependencies
-        # Deliberately not `pip install -r requirements.txt`: that file pins
-        # exact versions including nvidia-cublas/cudnn CUDA wheels, which are
-        # irrelevant on a CPU-only CI runner and slow to fetch. Install just what
-        # the import check and the two pure-logic tests need, unpinned. Both
-        # tests import main, which pulls in PyQt5 and audioplayer via sound.py,
-        # so those are required here even though smoke_test.py doesn't name them.
+        # `pip install -e .` reads dependencies from pyproject.toml rather than a
+        # hand-maintained list here. The list drifted out of sync with the code
+        # three times — smoke_test.py needed webrtcvad/onnxruntime, and the two
+        # pure-logic tests needed audioplayer (via sound.py) and openai (via
+        # transcription.py). None are obvious from reading a test.
+        #
+        # Deliberately not requirements.txt: that pins exact versions including
+        # nvidia-cublas/cudnn CUDA wheels, irrelevant on a CPU-only runner.
         run: |
           python -m pip install --upgrade pip
-          pip install faster-whisper pynput sounddevice soundfile webrtcvad-wheels onnxruntime huggingface_hub numpy pyyaml requests PyQt5 audioplayer
+          pip install -e .
 
       - name: Import check
         run: python smoke_test.py
