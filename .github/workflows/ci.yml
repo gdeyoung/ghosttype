@@ -31,10 +31,12 @@ jobs:
         # Deliberately not `pip install -r requirements.txt`: that file pins
         # exact versions including nvidia-cublas/cudnn CUDA wheels, which are
         # irrelevant on a CPU-only CI runner and slow to fetch. Install just what
-        # the smoke test imports, unpinned.
+        # the import check and the two pure-logic tests need, unpinned. Both
+        # tests import main, which pulls in PyQt5 and audioplayer via sound.py,
+        # so those are required here even though smoke_test.py doesn't name them.
         run: |
           python -m pip install --upgrade pip
-          pip install faster-whisper pynput sounddevice soundfile webrtcvad-wheels onnxruntime huggingface_hub numpy pyyaml requests PyQt5
+          pip install faster-whisper pynput sounddevice soundfile webrtcvad-wheels onnxruntime huggingface_hub numpy pyyaml requests PyQt5 audioplayer
 
       - name: Import check
         run: python smoke_test.py
