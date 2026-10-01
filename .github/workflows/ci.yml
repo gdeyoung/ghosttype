@@ -28,9 +28,13 @@ jobs:
           cache: pip
 
       - name: Install runtime dependencies
+        # Deliberately not `pip install -r requirements.txt`: that file pins
+        # exact versions including nvidia-cublas/cudnn CUDA wheels, which are
+        # irrelevant on a CPU-only CI runner and slow to fetch. Install just what
+        # the smoke test imports, unpinned.
         run: |
           python -m pip install --upgrade pip
-          pip install faster-whisper pynput sounddevice soundfile numpy pyyaml requests
+          pip install faster-whisper pynput sounddevice soundfile webrtcvad-wheels onnxruntime huggingface_hub numpy pyyaml requests PyQt5
 
       - name: Import check
         run: python smoke_test.py
