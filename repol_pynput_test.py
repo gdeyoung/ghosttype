@@ -9,6 +9,8 @@ We do NOT need the Copilot key or package identity to test this: we run the
 built handler exe directly and have it inject F13, while a pynput listener
 watches for it. If the listener sees F13, the injection path is proven.
 
+Requires a built Repilot checkout beside this repo (see REPILOT_REPO).
+
 Config: %AppData%\\Repilot\\settings.json
   {"Action":{"Type":1,"Combo":{"Modifiers":0,"VirtualKey":124}}}   # 124 = VK_F13
 
@@ -23,7 +25,11 @@ import time
 
 from pynput import keyboard
 
-REPO = r"C:\Users\gregd\work\Repilot"
+# Resolve the Repilot checkout relative to this script's parent dir, so the test
+# is not tied to one machine's home directory. Override with REPILOT_REPO.
+DEFAULT_REPO = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Repilot')
+REPO = os.environ.get('REPILOT_REPO', DEFAULT_REPO)
 EXE = os.path.join(
     REPO, 'RepilotKey', 'bin', 'x64', 'Release',
     'net10.0-windows10.0.22000.0', 'win-x64', 'publish', 'RepilotKey.exe')

@@ -1,7 +1,7 @@
 """Deep smoke test: prove run.py's preload order yields a USABLE model.
 
 smoke_test.py only checks that imports succeed. It cannot catch the two failure
-modes that actually bite on xps16:
+modes that actually bite on Windows:
   1. ctranslate2/PyQt5 DLL conflict -> segfault when the model loads after Qt
   2. an inherited PYTHONPATH pointing at another env's site-packages
 

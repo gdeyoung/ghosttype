@@ -2,11 +2,11 @@
 
 Push-to-talk and press-to-toggle voice typing for Windows. Press a hotkey, speak — your words appear in whatever app has focus. Fully offline. Local Whisper.
 
-This is Greg DeYoung's fork of [CatBoneheaD/Whisper-Writer](https://github.com/CatBoneheaD/Whisper-Writer), maintained for personal use across the Greg DeYoung fleet.
+This is a fork of [CatBoneheaD/Whisper-Writer](https://github.com/CatBoneheaD/Whisper-Writer), developed on Windows.
 
 ## What it does
 
-Press your hotkey and speak. Your voice is transcribed locally by faster-whisper and typed into the focused window — same workflow as BoxType/Voxtype on Omarchy Linux. Recording modes include `press_to_toggle` (press once to start, once to stop — the default, and the right choice for remapped keys), `hold_to_record` (BoxType-style push-to-talk), `continuous`, and `voice_activity_detection`.
+Press your hotkey and speak. Your voice is transcribed locally by faster-whisper and typed into the focused window. Recording modes include `press_to_toggle` (press once to start, once to stop — the default, and the right choice for remapped keys), `hold_to_record` (push-to-talk), `continuous`, and `voice_activity_detection`.
 
 ## Screenshots
 
@@ -37,7 +37,7 @@ focus, so the transcribed text goes to the app you were typing in, not here.
 - **Settings UI** — hotkey with press-to-capture, recording mode, language, device, theme, autostart — no YAML required.
 - **Start with Windows** (optional) and **silent launch** via `launch.vbs` — lives in the system tray.
 - **Single-instance guard** — no more doubled text from a second launch.
-- **Press-to-toggle or hold-to-record** — toggle is the default (and the right choice for remapped keys); BoxType-style push-to-talk is still available.
+- **Press-to-toggle or hold-to-record** — toggle is the default (and the right choice for remapped keys); push-to-talk is still available.
 
 Transcription runs **locally** by default (faster-whisper), or through the **OpenAI API** if you enable it in Settings.
 
@@ -75,8 +75,8 @@ The license chain breaks at CatBoneheaD's relicense in their 2026 rewrite (MIT �
 ## Using the Copilot key as your hotkey
 
 Laptops with a dedicated Copilot key can't bind it directly: Windows 11 consumes
-that key before any application sees it. A live `pynput` probe on an XPS 16
-recorded **zero events** for the Copilot key while surrounding keystrokes arrived
+that key before any application sees it. A live `pynput` probe recorded
+**zero events** for the Copilot key while surrounding keystrokes arrived
 normally.
 
 The workaround is to have Windows translate it. [Repilot](https://github.com/RyanEwen/Repilot)
@@ -118,10 +118,10 @@ recording_options:
   recording_mode: press_to_toggle
 ```
 
-On laptops where the top row is the media row (most modern laptops, including the
-Dell XPS 16), `F1`–`F12` require holding **Fn**. Avoid Fn chords for a hotkey —
-they are awkward and fragile under `pynput`. `f13`–`f24` have no other job on most
-keyboards and are the safest function-key range if you want one.
+On most modern laptops the top row is the media row, so `F1`–`F12` require
+holding **Fn**. Avoid Fn chords for a hotkey — they are awkward and fragile
+under `pynput`. `f13`–`f24` have no other job on most keyboards and are the
+safest function-key range if you want one.
 
 ## Getting started
 
@@ -160,16 +160,16 @@ python run.py
 
 ### Launch without a console (recommended)
 
-Double-click **`launch.vbs`** — it starts the app silently with `pythonw.exe` (no console window). Create a desktop shortcut to `launch.vbs` and set its icon to `assets/ww-logo.ico`.
+Double-click **`launch.vbs`** — it starts the app silently with `pythonw.exe` (no console window). Create a desktop shortcut to `launch.vbs` and set its icon to `assets/ghosttype.ico`.
 
-Default hotkey is `Ctrl+Shift+Space`. Change it in Settings — the **press-to-capture** button makes it easy to set F9 to match your Omarchy BoxType workflow.
+Default hotkey is `Ctrl+Shift+Space`. Change it in Settings with the **press-to-capture** button.
 
 ## Recording modes
 
-- `continuous` *(default)*: stops after a pause, transcribes, then keeps listening. Press the hotkey again to stop.
+- `press_to_toggle` *(default)*: starts on hotkey, stops on the next hotkey press.
+- `hold_to_record`: records while the hotkey is held down.
+- `continuous`: stops after a pause, transcribes, then keeps listening. Press the hotkey again to stop.
 - `voice_activity_detection`: stops after a pause; won't restart until you press the hotkey.
-- `press_to_toggle`: starts on hotkey, stops on the next hotkey press.
-- `hold_to_record`: records while the hotkey is held down. **Set this to match BoxType.**
 
 ## Configuration
 

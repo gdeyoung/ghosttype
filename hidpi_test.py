@@ -1,8 +1,8 @@
 """HiDPI verification: prove the dashboard actually renders at 2x, not just that
 the Qt attribute got set.
 
-AA_EnableHighDpiScaling makes Qt scale the whole UI. We assert on the thing Greg
-actually complained about: a QLabel's rendered height in logical px must be
+AA_EnableHighDpiScaling makes Qt scale the whole UI. We assert on the thing
+that actually matters: a QLabel's rendered height in logical px must be
 noticeably larger than the same font at unscaled 1x. We build both a scaled and
 an unscaled label and compare.
 

@@ -1,8 +1,8 @@
 """Interactive hotkey tester — press a key, see whether ghosttype can bind it.
 
-The F-row on a Dell XPS 16 is dual-purpose: the top row is the media row by
-default, so "F9" is really Fn+F9 and the F-keys need the Fn key held. That makes
-them a bad push-to-talk. This tool prints, live, exactly what ghosttype's
+On most modern laptops the F-row is dual-purpose: the top row is the media row
+by default, so "F9" is really Fn+F9 and the F-keys need the Fn key held. That
+makes them a poor push-to-talk key. This tool prints, live, exactly what ghosttype's
 key_listener would bind for whatever you press — including keys the Fn row
 cannot reach cleanly.
 

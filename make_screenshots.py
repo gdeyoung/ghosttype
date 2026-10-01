@@ -59,7 +59,14 @@ def save(widget, name):
 
 
 print('capturing Settings page...')
-dash = DashboardWindow(HistoryStore())
+# NOTE: build against a throwaway history DB, never the user's real one. A
+# screenshot of the History page populated from live transcriptions would publish
+# whatever the user happened to dictate. These captures ship in a public README.
+# HistoryStore opens the DB in its constructor, so the path must be passed in.
+_scratch_db = os.path.join(BASE, '_screenshot_history_scratch.db')
+_hist = HistoryStore(db_path=_scratch_db)
+
+dash = DashboardWindow(_hist)
 dash.show()
 settle()
 dash._switch_page(1)          # index 1 = Settings
@@ -87,7 +94,20 @@ if scroller is not None:
 # Also grab the History page — it shows the transcriptions from testing.
 dash._switch_page(0)
 settle(400)
+# Seed the throwaway DB with obviously-generic entries so the History shot shows
+# the feature without publishing anything real.
+for _txt in (
+    'Meeting notes: reviewed the quarterly numbers and the roadmap draft.',
+    'Reminder: the build finishes in about four minutes.',
+    'Shopping list is in the shared document.',
+):
+    _hist.add(_txt, 4.2, 'base')
+dash.refresh_history()
+settle(400)
 save(dash, 'screenshot-history.png')
+for _f in (_scratch_db,):
+    if os.path.exists(_f):
+        os.remove(_f)
 
 print('capturing recording indicator...')
 ind = StatusWindow()
