@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, ghosttype-init]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch — no point burning minutes on a
+# commit that's already been superseded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The full suites need a model, a GUI and a microphone, so they can't run here.
+  # What CI *can* do cheaply is answer the first question any reviewer asks:
+  # does this still import, and do the pure-logic tests still pass?
+  smoke:
+    name: Import smoke test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install faster-whisper pynput sounddevice soundfile numpy pyyaml requests
+
+      - name: Import check
+        run: python smoke_test.py
+
+      - name: Brand strings resolve
+        # The app once failed to import because 13 constants were imported from
+        # brand.py but never defined. This is a cheap guard against that class
+        # of breakage returning.
+        run: python check_brand.py
+
+      - name: No Cyrillic in shipped source
+        run: |
+          $hits = Get-ChildItem -Recurse -Include *.py,*.yaml,*.vbs -Path src,run.py,launch.vbs |
+                  Select-String -Pattern '[\u0400-\u04FF]'
+          if ($hits) {
+            $hits | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line)" }
+            exit 1
+          }
+          Write-Host "no Cyrillic in shipped source"
+
+      - name: Pure-logic tests
+        # These need no microphone, no model download and no GUI session.
+        run: |
+          python toggle_test.py
+          python sound_test.py
+
+  # Full suites — model, GUI, mic. Run manually or on demand, not on every push,
+  # because they download ~150 MB of weights and need a desktop session.
+  full:
+    name: Full suites (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Download a small model
+        run: python download_model.py tiny.en
+      - name: Run the suites
+        run: |
+          python smoke_test_model.py
+          python hidpi_test.py
+          python indicator_test.py
+          python max_recording_test.py

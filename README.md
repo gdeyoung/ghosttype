@@ -1,8 +1,28 @@
 # ghosttype
 
-Push-to-talk and press-to-toggle voice typing for Windows. Press a hotkey, speak — your words appear in whatever app has focus. Fully offline. Local Whisper.
+**Voice typing for Windows that stays out of your way.** Press a hotkey, speak,
+and the words land in whatever app has focus. Runs a local Whisper model — no
+API key, no account, nothing leaving the machine.
 
-This is a fork of [CatBoneheaD/Whisper-Writer](https://github.com/CatBoneheaD/Whisper-Writer), developed on Windows.
+```yaml
+recording_options:
+  activation_key: f13
+  recording_mode: press_to_toggle
+```
+
+- **Works on real laptop keyboards.** Media function rows (`F1`–`F12` behind
+  **Fn**) and the dedicated Copilot key are both handled — see
+  [Using the Copilot key](#using-the-copilot-key-as-your-hotkey).
+- **Genuinely unobtrusive.** Lives in the tray. The only thing that appears is a
+  340×48 pill while you speak — about 1% of the screen, and it never takes
+  focus, so the text goes to your app and not to the overlay.
+- **Private by construction.** Local inference. No telemetry, no account, no
+  network calls at runtime.
+
+![Settings](assets/screenshot-settings.png)
+
+This is a fork of [CatBoneheaD/Whisper-Writer](https://github.com/CatBoneheaD/Whisper-Writer),
+developed on Windows.
 
 ## What it does
 
